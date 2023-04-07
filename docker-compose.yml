@@ -1,0 +1,15 @@
+version: '3'
+services:
+  yipbackend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: yipbackend
+    image: yipbackend
+    restart: always
+    ports:
+      - "8002:8000"
+    volumes:
+      - /var/log/yipbackend:/var/log/yipbackend
+    env_file:
+      - .env
