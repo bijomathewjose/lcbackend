@@ -50,7 +50,7 @@ class CreateCircleView(APIView):
             return CustomResponse(general_message="Interest group title is required").get_failure_response()
         # get org id and org code
         response = requests.get(
-            config("FR_DOMAIN_NAME") + "/api/v1/learning-circle/user-org/", headers={"userId": user_id}
+            config("BACKEND_ENDPOINT") + "/api/v1/learning-circle/get-user-college/", headers={"userId": user_id}
         )
         if not response.status_code == 200:
             return CustomResponse(general_message=response.json()["message"]).get_failure_response()
@@ -130,7 +130,7 @@ class JoinCircleView(APIView):
         org_id = None
         if user_id:
             response = requests.get(
-                config("FR_DOMAIN_NAME") + "/api/v1/learning-circle/user-org/", headers={"userId": user_id}
+                config("BACKEND_ENDPOINT") + "/api/v1/learning-circle/get-user-college/", headers={"userId": user_id}
             )
             if not response.status_code == 200:
                 return CustomResponse(general_message=response.json()["message"]).get_failure_response()
