@@ -1,7 +1,9 @@
 from rest_framework.views import APIView
 import requests
 from decouple import config
-from utils.utils_views import CustomResponse, get_current_utc_time
+from utils.utils_views import get_current_utc_time
+from utils.response import CustomResponse
+from utils.permission import CustomizePermission, JWTUtils, get_current_utc_time
 from learningcircle.models import LearningCircle, CircleUserLink
 from datetime import datetime
 from uuid import uuid4
@@ -10,6 +12,8 @@ import hmac
 
 
 class CreateCircleView(APIView):
+    authentication_classes = [CustomizePermission]
+
     def get_circle_code(self, org_code, org_id, ig_title, ig_id):
         circles_in_ig = LearningCircle.objects.filter(college_id=org_id, interest_group_id=ig_id)
         count = len(circles_in_ig)
@@ -37,7 +41,7 @@ class CreateCircleView(APIView):
 
     def post(self, request):
         # get user id
-        user_id = request.headers.get("userId")
+        user_id = JWTUtils.fetch_user_id(request)
         if not user_id:
             return CustomResponse(general_message="User id is required").get_failure_response()
         # get interest group id
@@ -87,7 +91,7 @@ class CreateCircleView(APIView):
         password = request.data.get("secret_key")
         if not password:
             return CustomResponse(
-                general_message="Password is required",
+                general_message="Secret key is required",
             ).get_failure_response()
         else:
             password = hmac.new(
@@ -126,7 +130,8 @@ class CreateCircleView(APIView):
 
 class JoinCircleView(APIView):
     def post(self, request):
-        user_id = request.headers.get("userId")
+        # get user id
+        user_id = JWTUtils.fetch_user_id(request)
         org_id = None
         if user_id:
             response = requests.get(
@@ -210,7 +215,7 @@ class JoinCircleView(APIView):
 class circleRequestAcceptView(APIView):
     def post(self, request):
         circle_id = request.headers.get("circleId")
-        user_id = request.headers.get("userId")
+        user_id = JWTUtils.fetch_user_id(request)
         if not circle_id:
             return CustomResponse(general_message="Circle id is required").get_failure_response()
         if not user_id:
